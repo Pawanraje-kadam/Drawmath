@@ -1,1 +1,172 @@
+:root {
+  --bg-primary: #fafbfc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f3f4f6;
+  --bg-hover: #e8eaed;
+  --bg-active: #e3e7ff;
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-focus: #4f6ef7;
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a6a;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #ffffff;
+  --accent-primary: #4f6ef7;
+  --accent-secondary: #6c8aff;
+  --accent-light: #eef1ff;
+  --accent-danger: #ef4444;
+  --accent-success: #22c55e;
+  --accent-warning: #f59e0b;
+  --grid-major: #e2e4e8;
+  --grid-minor: #f0f1f3;
+  --axis-color: #374151;
+  --shape-circle: #4f6ef7;
+  --shape-ellipse: #7c3aed;
+  --shape-line: #059669;
+  --shape-rect: #d97706;
+  --shape-triangle: #dc2626;
+  --shape-parabola: #0891b2;
+  --shape-sine: #c026d3;
+  --shape-vector: #65a30d;
+  --shape-point: #1a1a2e;
+  --shape-polygon: #ea580c;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-focus: 0 0 0 3px rgba(79,110,247,0.2);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --toolbar-height: 64px;
+  --inspector-width: 320px;
+  --statusbar-height: 32px;
+  --z-toolbar: 100;
+  --z-inspector: 100;
+  --z-context: 200;
+  --z-modal: 300;
+  --z-tooltip: 400;
+}
 
+[data-theme="dark"] {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-tertiary: #252833;
+  --bg-hover: #2d313e;
+  --bg-active: #2a2d4a;
+  --border-light: #2d313e;
+  --border-medium: #3d4251;
+  --border-focus: #4f6ef7;
+  --text-primary: #e4e6f0;
+  --text-secondary: #9ca3b8;
+  --text-tertiary: #5d6478;
+  --text-inverse: #0f1117;
+  --accent-primary: #5a7aff;
+  --accent-secondary: #7c96ff;
+  --accent-light: #1e2340;
+  --grid-major: #252833;
+  --grid-minor: #1c1f28;
+  --axis-color: #9ca3b8;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+  border: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+input[type="number"] {
+  font-family: var(--font-mono);
+  width: 72px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+.katex {
+  font-size: 1em !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.15s ease-out;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --toolbar-height: 56px;
+    --inspector-width: 100%;
+    --statusbar-height: 28px;
+  }
+}
