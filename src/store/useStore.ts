@@ -6,6 +6,7 @@ import { createShape, deserializeShape } from '../engine/GeometryEngine';
 import { HistoryManager, HistoryState } from '../engine/HistoryManager';
 import { CoordinateSystem } from '../engine/CoordinateSystem';
 import { findIntersections, IntersectionInfo } from '../engine/IntersectionEngine';
+import { CircleShape } from '../engine/shapes/CircleShape';
 import { LineShape } from '../engine/shapes/LineShape';
 import { TriangleShape } from '../engine/shapes/TriangleShape';
 import { VectorShape } from '../engine/shapes/VectorShape';
@@ -380,17 +381,19 @@ export const useStore = create<MathSketchState>((set, get) => {
         } catch {}
       }
 
-      const { CircleShape: CS } = require('../engine/shapes/CircleShape');
-      const { LineShape: LS } = require('../engine/shapes/LineShape');
-
       const circle = createShape('circle', { x: 2, y: 1 });
-      (circle as any).r = 3;
+      if (circle instanceof CircleShape) {
+        circle.r = 3;
+      }
       circle.data.name = 'Circle 1';
 
       const line = createShape('line', { x: 0, y: 0 });
-      const ls = line as LineShape;
-      ls.x1 = -4; ls.y1 = 0;
-      ls.x2 = 4; ls.y2 = 4;
+      if (line instanceof LineShape) {
+        line.x1 = -4;
+        line.y1 = 0;
+        line.x2 = 4;
+        line.y2 = 4;
+      }
       line.data.name = 'Line 1';
 
       set({ shapes: [circle, line], selectedIds: [circle.id] });
