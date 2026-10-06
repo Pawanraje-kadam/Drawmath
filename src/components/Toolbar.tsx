@@ -70,7 +70,7 @@ export const Toolbar: React.FC = () => {
             fontSize: 14,
             color: 'var(--text-primary)',
             letterSpacing: '-0.3px'
-          }}>MathSketch</span>
+          }}>Drawmath</span>
         )}
       </div>
 

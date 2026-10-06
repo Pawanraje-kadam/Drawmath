@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
+import { ZOOM_STEP } from '../engine/CoordinateSystem';
 
 export function useKeyboard() {
   useEffect(() => {
@@ -15,6 +16,15 @@ export function useKeyboard() {
       } else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         state.undo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        state.zoomBy(ZOOM_STEP);
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === '-' || e.key === '_')) {
+        e.preventDefault();
+        state.zoomBy(1 / ZOOM_STEP);
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        state.resetView();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         state.deleteSelected();

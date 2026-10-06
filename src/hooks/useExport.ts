@@ -19,7 +19,7 @@ export function useExport() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       const a = document.createElement('a');
-      a.download = 'mathsketch.png';
+      a.download = 'drawmath.png';
       a.href = canvas.toDataURL('image/png');
       a.click();
     };
@@ -32,7 +32,7 @@ export function useExport() {
     const svgData = new XMLSerializer().serializeToString(svg);
     const blob = new Blob([svgData], { type: 'image/svg+xml' });
     const a = document.createElement('a');
-    a.download = 'mathsketch.svg';
+    a.download = 'drawmath.svg';
     a.href = URL.createObjectURL(blob);
     a.click();
   }, []);
@@ -41,7 +41,7 @@ export function useExport() {
     const json = useStore.getState().saveWorkspace();
     const blob = new Blob([json], { type: 'application/json' });
     const a = document.createElement('a');
-    a.download = 'mathsketch.json';
+    a.download = 'drawmath.json';
     a.href = URL.createObjectURL(blob);
     a.click();
   }, []);

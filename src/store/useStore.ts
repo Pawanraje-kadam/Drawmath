@@ -4,7 +4,7 @@ import { ShapeType, Vec2, Viewport, EquationFormat, HandleType } from '../types'
 import { Shape } from '../engine/shapes/Shape';
 import { createShape, deserializeShape } from '../engine/GeometryEngine';
 import { HistoryManager, HistoryState } from '../engine/HistoryManager';
-import { CoordinateSystem } from '../engine/CoordinateSystem';
+import { CoordinateSystem, DEFAULT_SCALE, clampScale } from '../engine/CoordinateSystem';
 import { findIntersections, IntersectionInfo } from '../engine/IntersectionEngine';
 import { CircleShape } from '../engine/shapes/CircleShape';
 import { LineShape } from '../engine/shapes/LineShape';
@@ -12,7 +12,21 @@ import { TriangleShape } from '../engine/shapes/TriangleShape';
 import { VectorShape } from '../engine/shapes/VectorShape';
 import { PolygonShape } from '../engine/shapes/PolygonShape';
 
-interface MathSketchState {
+/** Local-storage key used to persist the workspace. */
+export const WORKSPACE_STORAGE_KEY = 'drawmath_workspace';
+/** Older key (pre-rename) — still read so existing work is not lost. */
+export const LEGACY_WORKSPACE_STORAGE_KEY = 'mathsketch_workspace';
+
+/** Read the persisted workspace, transparently falling back to the legacy key. */
+export const readSavedWorkspace = (): string | null => {
+  if (typeof localStorage === 'undefined') return null;
+  return (
+    localStorage.getItem(WORKSPACE_STORAGE_KEY) ??
+    localStorage.getItem(LEGACY_WORKSPACE_STORAGE_KEY)
+  );
+};
+
+interface DrawMathState {
   shapes: Shape[];
   selectedIds: string[];
   viewport: Viewport;
@@ -42,6 +56,9 @@ interface MathSketchState {
   duplicateSelected: () => void;
   deleteSelected: () => void;
   setViewport: (viewport: Partial<Viewport>) => void;
+  zoomBy: (factor: number) => void;
+  zoomTo: (scale: number) => void;
+  resetView: () => void;
   setEquationFormat: (format: EquationFormat) => void;
   toggleSnapping: () => void;
   toggleMeasurements: () => void;
@@ -75,14 +92,14 @@ interface MathSketchState {
   snapToGrid: (pos: Vec2) => Vec2;
 }
 
-export const useStore = create<MathSketchState>((set, get) => {
+export const useStore = create<DrawMathState>((set, get) => {
   const coordSystem = new CoordinateSystem();
   const history = new HistoryManager();
 
   return {
     shapes: [],
     selectedIds: [],
-    viewport: { offsetX: 0, offsetY: 0, scale: 50 },
+    viewport: { offsetX: 0, offsetY: 0, scale: DEFAULT_SCALE },
     coordSystem,
     history,
     equationFormat: 'standard',
@@ -190,6 +207,33 @@ export const useStore = create<MathSketchState>((set, get) => {
       const newVP = { ...state.viewport, ...viewport };
       coordSystem.setViewport(newVP);
       set({ viewport: newVP });
+    },
+
+    /** Zoom a relative step (factor > 1 zooms in, < 1 zooms out) around the canvas centre. */
+    zoomBy: (factor) => {
+      if (!Number.isFinite(factor) || factor <= 0) return;
+      const vp = get().viewport;
+      const target = vp.scale * factor;
+      if (target === vp.scale) return; // already at the zoom limit
+      coordSystem.setViewport(vp);
+      coordSystem.zoomAtCenter(factor);
+      set({ viewport: coordSystem.getViewport() });
+    },
+
+    /** Jump to an absolute zoom level (pixels per world unit). */
+    zoomTo: (scale) => {
+      const target = clampScale(scale);
+      const vp = get().viewport;
+      if (target === vp.scale) return;
+      coordSystem.setViewport(vp);
+      coordSystem.zoomToScale(target);
+      set({ viewport: coordSystem.getViewport() });
+    },
+
+    /** Restore the default zoom level and centre the origin. */
+    resetView: () => {
+      coordSystem.reset();
+      set({ viewport: coordSystem.getViewport() });
     },
 
     setEquationFormat: (format) => set({ equationFormat: format }),
@@ -331,7 +375,7 @@ export const useStore = create<MathSketchState>((set, get) => {
         }
       };
       const json = JSON.stringify(data, null, 2);
-      localStorage.setItem('mathsketch_workspace', json);
+      localStorage.setItem(WORKSPACE_STORAGE_KEY, json);
       return json;
     },
 
@@ -342,13 +386,13 @@ export const useStore = create<MathSketchState>((set, get) => {
         set({
           shapes,
           selectedIds: [],
-          viewport: data.viewport || { offsetX: 0, offsetY: 0, scale: 50 },
+          viewport: data.viewport || { offsetX: 0, offsetY: 0, scale: DEFAULT_SCALE },
           equationFormat: data.settings?.equationFormat || 'standard',
           snapping: data.settings?.snapping || false,
           showMeasurements: data.settings?.showMeasurements ?? true,
           theme: data.settings?.theme || 'light'
         });
-        coordSystem.setViewport(data.viewport || { offsetX: 0, offsetY: 0, scale: 50 });
+        coordSystem.setViewport(data.viewport || { offsetX: 0, offsetY: 0, scale: DEFAULT_SCALE });
         if (data.settings?.theme) {
           document.documentElement.setAttribute('data-theme', data.settings.theme);
         }
@@ -362,7 +406,8 @@ export const useStore = create<MathSketchState>((set, get) => {
     clearWorkspace: () => {
       get().pushHistory();
       set({ shapes: [], selectedIds: [], intersections: [] });
-      localStorage.removeItem('mathsketch_workspace');
+      localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_WORKSPACE_STORAGE_KEY);
     },
 
     getSelectedShapes: () => {
@@ -373,7 +418,7 @@ export const useStore = create<MathSketchState>((set, get) => {
     getShapeById: (id) => get().shapes.find(s => s.id === id),
 
     initDemo: () => {
-      const saved = localStorage.getItem('mathsketch_workspace');
+      const saved = readSavedWorkspace();
       if (saved) {
         try {
           get().loadWorkspace(saved);
