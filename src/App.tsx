@@ -6,7 +6,7 @@ import { Inspector } from './components/Inspector';
 import { StatusBar } from './components/StatusBar';
 import { ContextMenu } from './components/ContextMenu';
 import { useKeyboard } from './hooks/useKeyboard';
-import { useStore } from './store/useStore';
+import { useStore, readSavedWorkspace } from './store/useStore';
 import { createShape } from './engine/GeometryEngine';
 import { CircleShape } from './engine/shapes/CircleShape';
 import { LineShape } from './engine/shapes/LineShape';
@@ -21,8 +21,8 @@ const App: React.FC = () => {
     const state = useStore.getState();
     if (state.shapes.length > 0) return;
 
-    // Check localStorage
-    const saved = localStorage.getItem('mathsketch_workspace');
+    // Check localStorage (falls back to the pre-rename key)
+    const saved = readSavedWorkspace();
     if (saved) {
       try {
         state.loadWorkspace(saved);

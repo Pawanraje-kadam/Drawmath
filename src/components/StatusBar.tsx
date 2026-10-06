@@ -2,9 +2,11 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { formatNum } from '../engine/shapes/Shape';
+import { DEFAULT_SCALE } from '../engine/CoordinateSystem';
 
 export const StatusBar: React.FC = () => {
   const { shapes, selectedIds, snapping, cursorWorld, viewport } = useStore();
+  const zoomPercent = Math.round((viewport.scale / DEFAULT_SCALE) * 100);
 
   return (
     <div style={{
@@ -22,7 +24,7 @@ export const StatusBar: React.FC = () => {
     }}>
       <span>Objects: {shapes.length}</span>
       {selectedIds.length > 0 && <span>Selected: {selectedIds.length}</span>}
-      <span>Zoom: {Math.round(viewport.scale)}x</span>
+      <span>Zoom: {zoomPercent}%</span>
       {snapping && <span style={{ color: 'var(--accent-primary)' }}>⊞ Snap</span>}
       <div style={{ flex: 1 }} />
       {cursorWorld && (

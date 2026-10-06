@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
-import { CoordinateSystem } from '../engine/CoordinateSystem';
+import { CoordinateSystem, DEFAULT_SCALE, MAX_SCALE, MIN_SCALE } from '../engine/CoordinateSystem';
 import { GridRenderer } from './GridRenderer';
 import { AxisRenderer } from './AxisRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
@@ -16,6 +16,7 @@ import { Vec2, HandleType, ShapeType } from '../types';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
 import { formatNum } from '../engine/shapes/Shape';
 import { IntersectionInfo } from '../engine/IntersectionEngine';
+import { ZoomControls } from './ZoomControls';
 
 export const Canvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -228,7 +229,7 @@ export const Canvas: React.FC = () => {
     const screen = getScreenPos(e as any);
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
     const worldBefore = cs.current.screenToWorld(screen);
-    const newScale = Math.max(5, Math.min(500, viewport.scale * factor));
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, viewport.scale * factor));
     const newViewport = { ...viewport, scale: newScale };
     cs.current.setViewport(newViewport);
     coordSystem.setViewport(newViewport);
@@ -267,7 +268,7 @@ export const Canvas: React.FC = () => {
       const world = cs.current.screenToWorld(screen);
       const hit = findShapeAt(world);
       if (!hit) {
-        setViewport({ offsetX: 0, offsetY: 0, scale: 50 });
+        setViewport({ offsetX: 0, offsetY: 0, scale: DEFAULT_SCALE });
       }
     }
   }, [getScreenPos, findShapeAt, setViewport]);
@@ -334,6 +335,9 @@ export const Canvas: React.FC = () => {
           })
         )}
       </svg>
+
+      {/* Zoom controls — top-right corner of the graph */}
+      <ZoomControls />
 
       {/* Cursor coordinates */}
       <CursorCoordinates />
