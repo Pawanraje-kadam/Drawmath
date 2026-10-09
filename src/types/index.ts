@@ -50,6 +50,9 @@ export interface ShapeData {
 
 export type EquationFormat = 'standard' | 'expanded';
 
+/** Top-level application mode. Draw is the default; Matrix is a separate workspace. */
+export type AppMode = 'draw' | 'matrix';
+
 export interface IntersectionResult {
   shapeA: string;
   shapeB: string;

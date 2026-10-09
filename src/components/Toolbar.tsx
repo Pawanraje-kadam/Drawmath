@@ -27,7 +27,8 @@ export const Toolbar: React.FC = () => {
   const {
     undo, redo, snapping, toggleSnapping, toggleTheme, theme,
     saveWorkspace, clearWorkspace, addShape, showMeasurements,
-    toggleMeasurements, isMobile, inspectorOpen, setInspectorOpen
+    toggleMeasurements, isMobile, inspectorOpen, setInspectorOpen,
+    appMode, setAppMode
   } = useStore();
   const [showActions, setShowActions] = useState(false);
 
@@ -77,7 +78,53 @@ export const Toolbar: React.FC = () => {
       {/* Divider */}
       <div style={{ width: 1, height: 28, background: 'var(--border-light)', flexShrink: 0 }} />
 
-      {/* Shape Tools */}
+      {/* Draw / Matrix mode switch */}
+      <div
+        role="group"
+        aria-label="Application mode"
+        style={{
+          display: 'flex',
+          gap: 2,
+          padding: 2,
+          background: 'var(--bg-tertiary)',
+          borderRadius: 'var(--radius-md)',
+          flexShrink: 0,
+          marginRight: 4
+        }}
+      >
+        {([['draw', 'Draw'], ['matrix', 'Matrix']] as const).map(([mode, label]) => {
+          const active = appMode === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={active}
+              title={mode === 'draw' ? 'Draw Mode — sketch geometric shapes' : 'Matrix Mode — explore 2×2 matrix transformations'}
+              onClick={() => setAppMode(mode)}
+              style={{
+                padding: '5px 12px',
+                borderRadius: 'calc(var(--radius-md) - 3px)',
+                fontSize: 12,
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                background: active ? 'var(--bg-secondary)' : 'transparent',
+                color: active ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+                boxShadow: active ? 'var(--shadow-sm)' : 'none',
+                transition: 'all 0.15s',
+                border: 'none'
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Divider */}
+      <div style={{ width: 1, height: 28, background: 'var(--border-light)', flexShrink: 0 }} />
+
+      {/* Shape Tools (Draw Mode only) */}
+      {appMode === 'draw' ? (
       <div style={{
         display: 'flex',
         gap: '2px',
@@ -126,28 +173,35 @@ export const Toolbar: React.FC = () => {
           </button>
         ))}
       </div>
+      ) : (
+        <div style={{ flex: 1 }} />
+      )}
 
       {/* Divider */}
       <div style={{ width: 1, height: 28, background: 'var(--border-light)', flexShrink: 0 }} />
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
-        <ToolbarButton title="Undo (Ctrl+Z)" onClick={undo}>↶</ToolbarButton>
-        <ToolbarButton title="Redo (Ctrl+Shift+Z)" onClick={redo}>↷</ToolbarButton>
+        {appMode === 'draw' && (
+          <>
+            <ToolbarButton title="Undo (Ctrl+Z)" onClick={undo}>↶</ToolbarButton>
+            <ToolbarButton title="Redo (Ctrl+Shift+Z)" onClick={redo}>↷</ToolbarButton>
 
-        <div style={{ width: 1, height: 28, background: 'var(--border-light)', margin: '0 4px' }} />
+            <div style={{ width: 1, height: 28, background: 'var(--border-light)', margin: '0 4px' }} />
 
-        <ToolbarButton
-          title={`Snap to Grid: ${snapping ? 'ON' : 'OFF'}`}
-          onClick={toggleSnapping}
-          active={snapping}
-        >⊞</ToolbarButton>
+            <ToolbarButton
+              title={`Snap to Grid: ${snapping ? 'ON' : 'OFF'}`}
+              onClick={toggleSnapping}
+              active={snapping}
+            >⊞</ToolbarButton>
 
-        <ToolbarButton
-          title={`Measurements: ${showMeasurements ? 'ON' : 'OFF'}`}
-          onClick={toggleMeasurements}
-          active={showMeasurements}
-        >📐</ToolbarButton>
+            <ToolbarButton
+              title={`Measurements: ${showMeasurements ? 'ON' : 'OFF'}`}
+              onClick={toggleMeasurements}
+              active={showMeasurements}
+            >📐</ToolbarButton>
+          </>
+        )}
 
         <ToolbarButton
           title={`Theme: ${theme}`}

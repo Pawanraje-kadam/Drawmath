@@ -10,12 +10,16 @@ export function useKeyboard() {
       const isInput = (e.target as HTMLElement)?.tagName === 'INPUT';
       if (isInput) return;
 
+      // Matrix Mode keeps view shortcuts (zoom / reset / save) but ignores
+      // shape-editing keys so they cannot mutate hidden drawing state.
+      const inMatrixMode = state.appMode === 'matrix';
+
       if (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
         e.preventDefault();
-        state.redo();
+        if (!inMatrixMode) state.redo();
       } else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        state.undo();
+        if (!inMatrixMode) state.undo();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
         e.preventDefault();
         state.zoomBy(ZOOM_STEP);
@@ -27,21 +31,23 @@ export function useKeyboard() {
         state.resetView();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
-        state.deleteSelected();
+        if (!inMatrixMode) state.deleteSelected();
       } else if (e.key === 'd' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        state.duplicateSelected();
+        if (!inMatrixMode) state.duplicateSelected();
       } else if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        const allIds = state.shapes.map(s => s.id);
-        useStore.setState({ selectedIds: allIds });
+        if (!inMatrixMode) {
+          const allIds = state.shapes.map(s => s.id);
+          useStore.setState({ selectedIds: allIds });
+        }
       } else if (e.key === 'Escape') {
         state.deselectAll();
         state.setContextMenu(null);
       } else if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         state.saveWorkspace();
-      } else if (e.key === 'g') {
+      } else if (e.key === 'g' && !inMatrixMode) {
         state.toggleSnapping();
       }
     };

@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { ShapeType, Vec2, Viewport, EquationFormat, HandleType } from '../types';
+import { ShapeType, Vec2, Viewport, EquationFormat, HandleType, AppMode } from '../types';
 import { Shape } from '../engine/shapes/Shape';
 import { createShape, deserializeShape } from '../engine/GeometryEngine';
 import { HistoryManager, HistoryState } from '../engine/HistoryManager';
@@ -11,6 +11,9 @@ import { LineShape } from '../engine/shapes/LineShape';
 import { TriangleShape } from '../engine/shapes/TriangleShape';
 import { VectorShape } from '../engine/shapes/VectorShape';
 import { PolygonShape } from '../engine/shapes/PolygonShape';
+import { Matrix2, MatrixColIndex, MatrixPresetId, MatrixRowIndex } from '../engine/matrix/types';
+import { cloneMatrix2, IDENTITY_MATRIX2, validateMatrix2 } from '../engine/matrix/Matrix2';
+import { getPresetMatrix } from '../engine/matrix/presets';
 
 /** Local-storage key used to persist the workspace. */
 export const WORKSPACE_STORAGE_KEY = 'drawmath_workspace';
@@ -46,6 +49,15 @@ interface DrawMathState {
   isMobile: boolean;
   inspectorOpen: boolean;
 
+  // Matrix Mode state — kept fully separate from drawing shapes.
+  // Derived values (determinant, transformed vectors, …) are never stored.
+  appMode: AppMode;
+  matrix: Matrix2;
+  testVector: Vec2;
+  /** 0 → identity, 1 → `matrix`. Normally 1; animates 0 → 1. */
+  animationProgress: number;
+  isAnimating: boolean;
+
   // Actions
   addShape: (type: ShapeType, position?: Vec2) => void;
   removeShape: (id: string) => void;
@@ -73,6 +85,17 @@ interface DrawMathState {
   renameShape: (id: string, name: string) => void;
   toggleShapeVisibility: (id: string) => void;
   setShapeParam: (id: string, key: string, value: number) => void;
+
+  // Matrix Mode actions
+  setAppMode: (mode: AppMode) => void;
+  setMatrixCell: (row: MatrixRowIndex, col: MatrixColIndex, value: number) => void;
+  setMatrix: (matrix: Matrix2) => void;
+  setTestVector: (vector: Vec2) => void;
+  selectMatrixPreset: (id: MatrixPresetId) => void;
+  resetMatrix: () => void;
+  startMatrixAnimation: () => void;
+  stopMatrixAnimation: () => void;
+  setAnimationProgress: (progress: number) => void;
 
   pushHistory: () => void;
   undo: () => void;
@@ -115,6 +138,12 @@ export const useStore = create<DrawMathState>((set, get) => {
     contextMenu: null,
     isMobile: window.innerWidth < 768,
     inspectorOpen: true,
+
+    appMode: 'draw',
+    matrix: cloneMatrix2(IDENTITY_MATRIX2),
+    testVector: { x: 2, y: 3 },
+    animationProgress: 1,
+    isAnimating: false,
 
     addShape: (type, position) => {
       const state = get();
@@ -313,6 +342,59 @@ export const useStore = create<DrawMathState>((set, get) => {
 
       set({ shapes: [...state.shapes] });
       get().updateIntersections();
+    },
+
+    // --- Matrix Mode actions ---
+
+    setAppMode: (mode) => set({ appMode: mode }),
+
+    setMatrixCell: (row, col, value) => {
+      if (!Number.isFinite(value)) return;
+      const state = get();
+      const matrix = cloneMatrix2(state.matrix);
+      matrix[row][col] = value;
+      set({ matrix, animationProgress: 1, isAnimating: false });
+    },
+
+    setMatrix: (matrix) => {
+      const validation = validateMatrix2(matrix);
+      if (!validation.valid || !validation.matrix) return;
+      set({ matrix: validation.matrix, animationProgress: 1, isAnimating: false });
+    },
+
+    setTestVector: (vector) => {
+      if (!Number.isFinite(vector.x) || !Number.isFinite(vector.y)) return;
+      set({ testVector: { x: vector.x, y: vector.y } });
+    },
+
+    selectMatrixPreset: (id) => {
+      const presetMatrix = getPresetMatrix(id);
+      if (!presetMatrix) return;
+      set({
+        matrix: presetMatrix,
+        animationProgress: 0,
+        isAnimating: true
+      });
+    },
+
+    resetMatrix: () => {
+      set({
+        matrix: cloneMatrix2(IDENTITY_MATRIX2),
+        animationProgress: 1,
+        isAnimating: false
+      });
+    },
+
+    /** Animate from the identity matrix I to the current matrix. */
+    startMatrixAnimation: () => set({ animationProgress: 0, isAnimating: true }),
+
+    /** Stop animating and land exactly on the target matrix. */
+    stopMatrixAnimation: () => set({ isAnimating: false, animationProgress: 1 }),
+
+    setAnimationProgress: (progress) => {
+      set({
+        animationProgress: Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 1
+      });
     },
 
     pushHistory: () => {
