@@ -37,6 +37,11 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --matrix-grid: #4f6ef7;
+  --matrix-e1: #e11d48;
+  --matrix-e2: #0d9488;
+  --matrix-test: #d97706;
+  --matrix-output: #7c3aed;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --toolbar-height: 64px;
@@ -68,6 +73,11 @@
   --grid-major: #252833;
   --grid-minor: #1c1f28;
   --axis-color: #9ca3b8;
+  --matrix-grid: #6c8aff;
+  --matrix-e1: #fb7185;
+  --matrix-e2: #2dd4bf;
+  --matrix-test: #fbbf24;
+  --matrix-output: #a78bfa;
 }
 
 *, *::before, *::after {

@@ -5,6 +5,7 @@ import { Canvas } from './components/Canvas';
 import { Inspector } from './components/Inspector';
 import { StatusBar } from './components/StatusBar';
 import { ContextMenu } from './components/ContextMenu';
+import { MatrixWorkspace } from './components/matrix/MatrixWorkspace';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useStore, readSavedWorkspace } from './store/useStore';
 import { createShape } from './engine/GeometryEngine';
@@ -14,7 +15,7 @@ import { LineShape } from './engine/shapes/LineShape';
 const App: React.FC = () => {
   useKeyboard();
 
-  const { shapes, isMobile, inspectorOpen } = useStore();
+  const { shapes, isMobile, inspectorOpen, appMode } = useStore();
 
   // Initialize demo scene
   useEffect(() => {
@@ -88,8 +89,14 @@ const App: React.FC = () => {
         overflow: 'hidden',
         flexDirection: isMobile ? 'column' : 'row'
       }}>
-        <Canvas />
-        {(!isMobile || inspectorOpen) && <Inspector />}
+        {appMode === 'draw' ? (
+          <>
+            <Canvas />
+            {(!isMobile || inspectorOpen) && <Inspector />}
+          </>
+        ) : (
+          <MatrixWorkspace />
+        )}
       </div>
 
       {!isMobile && <StatusBar />}
