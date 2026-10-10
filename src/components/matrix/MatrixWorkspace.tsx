@@ -7,7 +7,11 @@ import { MatrixPresets } from './MatrixPresets';
 import { MatrixInspector } from './MatrixInspector';
 import { MatrixLegend } from './MatrixLegend';
 
-/** Full duration of the I → A sweep, in milliseconds. */
+/**
+ * Full duration of the I → A sweep at 1x speed, in milliseconds.
+ * The effective duration is `ANIMATION_DURATION_MS / animationSpeed`,
+ * so 0.2x plays 5× slower (4500 ms) and 1x plays at full speed (900 ms).
+ */
 const ANIMATION_DURATION_MS = 900;
 
 /**
@@ -25,6 +29,7 @@ export const MatrixWorkspace: React.FC = () => {
   const matrix = useStore(s => s.matrix);
   const animationProgress = useStore(s => s.animationProgress);
   const isAnimating = useStore(s => s.isAnimating);
+  const animationSpeed = useStore(s => s.animationSpeed);
 
   /** What is currently drawn: identity at t = 0, the entered matrix at t = 1. */
   const displayMatrix = useMemo(
@@ -34,15 +39,19 @@ export const MatrixWorkspace: React.FC = () => {
 
   // Animation loop: identity → target matrix. Re-entrant across mode switches
   // (resumes from the stored progress) and cancelled cleanly on unmount.
+  // Re-runs when the speed changes so mid-animation adjustments take effect
+  // immediately, resuming from the current progress with the new duration.
   useEffect(() => {
     if (!isAnimating) return;
 
     let raf = 0;
     const startProgress = useStore.getState().animationProgress;
     const startTime = performance.now();
+    const clampedSpeed = Math.min(1, Math.max(0.2, animationSpeed));
+    const durationMs = ANIMATION_DURATION_MS / clampedSpeed;
 
     const step = (now: number) => {
-      const elapsed = Math.max(0, (now - startTime) / ANIMATION_DURATION_MS);
+      const elapsed = Math.max(0, (now - startTime) / durationMs);
       // Smoothstep easing; exactly 1 at the end so the sweep lands on A.
       const eased = elapsed >= 1 ? 1 : elapsed * elapsed * (3 - 2 * elapsed);
       const t = startProgress + (1 - startProgress) * eased;
@@ -58,7 +67,7 @@ export const MatrixWorkspace: React.FC = () => {
 
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [isAnimating]);
+  }, [isAnimating, animationSpeed]);
 
   return (
     <div

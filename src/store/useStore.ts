@@ -57,6 +57,8 @@ interface DrawMathState {
   /** 0 → identity, 1 → `matrix`. Normally 1; animates 0 → 1. */
   animationProgress: number;
   isAnimating: boolean;
+  /** Playback speed multiplier for the I → A animation (0.2 – 1, default 1). */
+  animationSpeed: number;
 
   // Actions
   addShape: (type: ShapeType, position?: Vec2) => void;
@@ -96,6 +98,7 @@ interface DrawMathState {
   startMatrixAnimation: () => void;
   stopMatrixAnimation: () => void;
   setAnimationProgress: (progress: number) => void;
+  setAnimationSpeed: (speed: number) => void;
 
   pushHistory: () => void;
   undo: () => void;
@@ -144,6 +147,7 @@ export const useStore = create<DrawMathState>((set, get) => {
     testVector: { x: 2, y: 3 },
     animationProgress: 1,
     isAnimating: false,
+    animationSpeed: 1,
 
     addShape: (type, position) => {
       const state = get();
@@ -395,6 +399,11 @@ export const useStore = create<DrawMathState>((set, get) => {
       set({
         animationProgress: Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 1
       });
+    },
+
+    setAnimationSpeed: (speed) => {
+      if (!Number.isFinite(speed)) return;
+      set({ animationSpeed: Math.min(1, Math.max(0.2, speed)) });
     },
 
     pushHistory: () => {

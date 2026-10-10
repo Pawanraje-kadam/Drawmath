@@ -133,6 +133,23 @@ input[type="number"] {
   width: 72px;
 }
 
+select {
+  font-family: inherit;
+  font-size: inherit;
+  border: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+select:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
