@@ -20,6 +20,28 @@ export const WORKSPACE_STORAGE_KEY = 'drawmath_workspace';
 /** Older key (pre-rename) — still read so existing work is not lost. */
 export const LEGACY_WORKSPACE_STORAGE_KEY = 'mathsketch_workspace';
 
+/**
+ * Phase of the animated Draw ↔ Matrix workspace hand-off.
+ *
+ * - `idle`     → nothing is animating, the workspace is settled.
+ * - `leaving`  → the current workspace plays its exit animation.
+ * - `entering` → the new workspace plays its entrance animation.
+ */
+export type ModeTransitionPhase = 'idle' | 'leaving' | 'entering';
+
+/** Duration of the outgoing workspace animation, in ms. */
+export const MODE_TRANSITION_OUT_MS = 260;
+/** Duration of the incoming workspace animation, in ms. */
+export const MODE_TRANSITION_IN_MS = 420;
+/** Total length of a full mode hand-off (exit + entrance), in ms. */
+export const MODE_TRANSITION_TOTAL_MS = MODE_TRANSITION_OUT_MS + MODE_TRANSITION_IN_MS;
+
+/**
+ * Pending timer for the mode hand-off. Kept outside the store so it can be
+ * cancelled without exposing it as reactive state.
+ */
+let modeTransitionTimer: ReturnType<typeof setTimeout> | null = null;
+
 /** Read the persisted workspace, transparently falling back to the legacy key. */
 export const readSavedWorkspace = (): string | null => {
   if (typeof localStorage === 'undefined') return null;
@@ -52,6 +74,10 @@ interface DrawMathState {
   // Matrix Mode state — kept fully separate from drawing shapes.
   // Derived values (determinant, transformed vectors, …) are never stored.
   appMode: AppMode;
+  /** Phase of the Draw ↔ Matrix hand-off animation. */
+  modeTransition: ModeTransitionPhase;
+  /** The mode the app is currently animating towards (null when settled). */
+  transitionTarget: AppMode | null;
   matrix: Matrix2;
   testVector: Vec2;
   /** 0 → identity, 1 → `matrix`. Normally 1; animates 0 → 1. */
@@ -143,6 +169,8 @@ export const useStore = create<DrawMathState>((set, get) => {
     inspectorOpen: true,
 
     appMode: 'draw',
+    modeTransition: 'idle',
+    transitionTarget: null,
     matrix: cloneMatrix2(IDENTITY_MATRIX2),
     testVector: { x: 2, y: 3 },
     animationProgress: 1,
@@ -350,7 +378,51 @@ export const useStore = create<DrawMathState>((set, get) => {
 
     // --- Matrix Mode actions ---
 
-    setAppMode: (mode) => set({ appMode: mode }),
+    /**
+     * Switch the workspace with an animated hand-off.
+     *
+     * The outgoing workspace keeps rendering while it plays its exit
+     * animation; only when that finishes is `appMode` swapped and the new
+     * workspace mounted with its entrance animation. Re-clicking mid-flight
+     * re-targets the transition instead of queueing it, and clicking the
+     * mode that is currently on screen cancels a pending hand-off.
+     */
+    setAppMode: (mode) => {
+      const state = get();
+
+      const clearTimer = () => {
+        if (modeTransitionTimer !== null) {
+          clearTimeout(modeTransitionTimer);
+          modeTransitionTimer = null;
+        }
+      };
+
+      // Already showing the requested mode. If a hand-off towards another
+      // mode is in flight, cancel it and stay where we are.
+      if (mode === state.appMode) {
+        if (state.modeTransition === 'leaving') {
+          clearTimer();
+          set({ modeTransition: 'idle', transitionTarget: null });
+        }
+        return;
+      }
+
+      // Already travelling towards the requested mode — let it finish.
+      if (state.transitionTarget === mode) return;
+
+      clearTimer();
+      set({ transitionTarget: mode, modeTransition: 'leaving' });
+
+      modeTransitionTimer = setTimeout(() => {
+        modeTransitionTimer = null;
+        set({ appMode: mode, modeTransition: 'entering' });
+
+        modeTransitionTimer = setTimeout(() => {
+          modeTransitionTimer = null;
+          set({ modeTransition: 'idle', transitionTarget: null });
+        }, MODE_TRANSITION_IN_MS);
+      }, MODE_TRANSITION_OUT_MS);
+    },
 
     setMatrixCell: (row, col, value) => {
       if (!Number.isFinite(value)) return;

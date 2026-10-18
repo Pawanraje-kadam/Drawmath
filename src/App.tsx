@@ -6,7 +6,10 @@ import { Inspector } from './components/Inspector';
 import { StatusBar } from './components/StatusBar';
 import { ContextMenu } from './components/ContextMenu';
 import { MatrixWorkspace } from './components/matrix/MatrixWorkspace';
+import { ModeStage } from './components/animations/ModeStage';
+import { ModeTransitionOverlay } from './components/animations/ModeTransitionOverlay';
 import { useKeyboard } from './hooks/useKeyboard';
+import { useButtonEffects } from './hooks/useButtonEffects';
 import { useStore, readSavedWorkspace } from './store/useStore';
 import { createShape } from './engine/GeometryEngine';
 import { CircleShape } from './engine/shapes/CircleShape';
@@ -14,6 +17,7 @@ import { LineShape } from './engine/shapes/LineShape';
 
 const App: React.FC = () => {
   useKeyboard();
+  useButtonEffects();
 
   const { shapes, isMobile, inspectorOpen, appMode } = useStore();
 
@@ -87,16 +91,20 @@ const App: React.FC = () => {
         flex: 1,
         display: 'flex',
         overflow: 'hidden',
-        flexDirection: isMobile ? 'column' : 'row'
+        position: 'relative'
       }}>
-        {appMode === 'draw' ? (
-          <>
-            <Canvas />
-            {(!isMobile || inspectorOpen) && <Inspector />}
-          </>
-        ) : (
-          <MatrixWorkspace />
-        )}
+        <ModeStage>
+          {appMode === 'draw' ? (
+            <>
+              <Canvas />
+              {(!isMobile || inspectorOpen) && <Inspector />}
+            </>
+          ) : (
+            <MatrixWorkspace />
+          )}
+        </ModeStage>
+
+        <ModeTransitionOverlay />
       </div>
 
       {!isMobile && <StatusBar />}

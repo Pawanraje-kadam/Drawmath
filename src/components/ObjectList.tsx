@@ -134,6 +134,7 @@ export const ObjectList: React.FC = () => {
             <button
               onClick={(e) => { e.stopPropagation(); removeShape(shape.id); }}
               title="Delete"
+              data-dm-ripple="danger"
               style={{
                 width: 20, height: 20,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
