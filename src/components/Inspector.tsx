@@ -258,6 +258,7 @@ export const Inspector: React.FC = () => {
             </button>
             <button
               onClick={deleteSelected}
+              data-dm-ripple="danger"
               style={{
                 flex: 1,
                 padding: '6px 0',
@@ -359,6 +360,7 @@ export const Inspector: React.FC = () => {
             </button>
             <button
               onClick={deleteSelected}
+              data-dm-ripple="danger"
               style={{
                 flex: 1,
                 padding: '6px 0',

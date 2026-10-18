@@ -50,6 +50,15 @@ From classroom geometry exercises to quick visual prototyping, Drawmath helps yo
 - light/dark theme toggle
 - responsive layout for desktop and mobile
 
+### Motion & feedback
+- ripple + press-down feedback on every button
+- animated Draw ↔ Matrix workspace hand-off (the outgoing workspace fades and
+  slides away while a light sweep crosses the canvas)
+- sliding indicator in the Draw / Matrix switch
+- live mode chip in the status bar
+- `M` toggles between the Draw and Matrix workspaces
+- honours the OS "reduce motion" preference
+
 ## Tech Stack
 
 - React + TypeScript
@@ -122,6 +131,7 @@ Drawmath/
 - Click a shape to select it, then use the inspector to adjust properties.
 - Toggle snapping for cleaner alignment and measurements.
 - Use the Matrix mode to visualize transformations and compare them with the identity matrix.
+- Press `M` at any time to jump between the Draw and Matrix workspaces.
 - Export your design as SVG or PNG when you want to share or present it.
 
 ## License

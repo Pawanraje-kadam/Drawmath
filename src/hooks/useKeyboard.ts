@@ -7,7 +7,10 @@ export function useKeyboard() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = useStore.getState();
-      const isInput = (e.target as HTMLElement)?.tagName === 'INPUT';
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isInput =
+        tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || target?.isContentEditable === true;
       if (isInput) return;
 
       // Matrix Mode keeps view shortcuts (zoom / reset / save) but ignores
@@ -49,6 +52,9 @@ export function useKeyboard() {
         state.saveWorkspace();
       } else if (e.key === 'g' && !inMatrixMode) {
         state.toggleSnapping();
+      } else if (e.key === 'm' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Toggle between the Draw and Matrix workspaces (animated hand-off).
+        state.setAppMode(inMatrixMode ? 'draw' : 'matrix');
       }
     };
 

@@ -72,6 +72,7 @@ const ContextMenuItem: React.FC<{
 }> = ({ onClick, children, danger }) => (
   <button
     onClick={onClick}
+    data-dm-ripple={danger ? 'danger' : undefined}
     style={{
       display: 'block',
       width: '100%',

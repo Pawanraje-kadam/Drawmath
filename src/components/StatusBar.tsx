@@ -5,7 +5,7 @@ import { formatNum } from '../engine/shapes/Shape';
 import { DEFAULT_SCALE } from '../engine/CoordinateSystem';
 
 export const StatusBar: React.FC = () => {
-  const { shapes, selectedIds, snapping, cursorWorld, viewport } = useStore();
+  const { shapes, selectedIds, snapping, cursorWorld, viewport, appMode } = useStore();
   const zoomPercent = Math.round((viewport.scale / DEFAULT_SCALE) * 100);
 
   return (
@@ -26,6 +26,13 @@ export const StatusBar: React.FC = () => {
       {selectedIds.length > 0 && <span>Selected: {selectedIds.length}</span>}
       <span>Zoom: {zoomPercent}%</span>
       {snapping && <span style={{ color: 'var(--accent-primary)' }}>⊞ Snap</span>}
+      <span
+        key={appMode}
+        className="dm-status-chip"
+        aria-label={`Workspace: ${appMode === 'draw' ? 'Draw' : 'Matrix'}`}
+      >
+        {appMode === 'draw' ? '✎ Draw' : '▦ Matrix'}
+      </span>
       <div style={{ flex: 1 }} />
       {cursorWorld && (
         <span>
