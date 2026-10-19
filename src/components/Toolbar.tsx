@@ -54,18 +54,21 @@ export const Toolbar: React.FC = () => {
         marginRight: '8px',
         flexShrink: 0
       }}>
-        <div style={{
-          width: 28,
-          height: 28,
-          borderRadius: 6,
-          background: 'var(--accent-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontWeight: 700,
-          fontSize: 14
-        }}>M</div>
+        <img
+          src="/logo.png"
+          alt="Drawmath logo"
+          width={28}
+          height={28}
+          draggable={false}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 6,
+            objectFit: 'cover',
+            display: 'block',
+            flexShrink: 0
+          }}
+        />
         {!isMobile && (
           <span style={{
             fontWeight: 600,

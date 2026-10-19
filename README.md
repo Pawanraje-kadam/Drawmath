@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Drawmath logo" width="112" />
+</p>
+
 # Drawmath
 
 <div align="center">
